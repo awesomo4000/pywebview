@@ -21,6 +21,7 @@ from webview.util import parse_api_js, default_html, js_bridge_call
 from webview.js.css import disable_text_select
 from webview.screen import Screen
 
+
 settings = {}
 
 # This lines allow to load non-HTTPS resources, like a local app as: http://127.0.0.1:5000
@@ -52,6 +53,7 @@ logger.debug('Using Cocoa')
 
 renderer = 'wkwebview'
 
+
 class BrowserView:
     instances = {}
     app = AppKit.NSApplication.sharedApplication()
@@ -74,32 +76,36 @@ class BrowserView:
             else:
                 return Foundation.NO
 
+
         def windowWillClose_(self, notification):
-            
-            i = BrowserView.get_instance('window', notification.object())
-
-            # Add extra window information to the callback since window
-            # instance will be unavailable to query.
-            args, kwargs = [], {}
-            if i.pywebview_window.verbose_events:
-                win = i.pywebview_window
-                args = [ i.uid ]
-                kwargs = { "width"  : win.width,
-                           "height" : win.height,
-                           "x"      : win.x,
-                           "y"      : win.y  }
-
             # Delete the closed instance from the dict
+            i = BrowserView.get_instance('window', notification.object())
             del BrowserView.instances[i.uid]
+
 
             if i.pywebview_window in windows:
                 windows.remove(i.pywebview_window)
 
             # Trigger the event callbacks
-            i.closed.set(*args, **kwargs)
+            i.closed.set()
 
             if BrowserView.instances == {}:
                 BrowserView.app.stop_(self)
+
+ 
+        def windowDidMove_(self, notification):
+            win = get_window(notification)
+            if not win.moved:
+                return
+            win.moved()
+
+
+        def windowDidEndLiveResize_(self, notification):
+            win = get_window(notification)
+            if not win.resized:
+                return
+            win.resized()
+
 
     class JSBridge(AppKit.NSObject):
         def initWithObject_(self, window):
@@ -926,5 +932,5 @@ def get_screens():
     return screens
 
 
-
-
+def get_window(notification):
+    return BrowserView.get_instance('window', notification.object()).pywebview_window
