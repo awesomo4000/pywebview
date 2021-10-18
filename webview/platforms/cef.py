@@ -17,6 +17,7 @@ from webview.js.css import disable_text_select
 from webview.js import dom
 from webview import _debug, _user_agent
 from webview.util import parse_api_js, default_html, js_bridge_call
+from webview.window import FixPoint
 
 
 sys.excepthook = cef.ExceptHook
