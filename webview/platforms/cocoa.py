@@ -277,13 +277,24 @@ class BrowserView:
 
         def performDragOperation_(self, sender):
             filenames = self.getPasteboardFilenames_(sender)
+
             if not filenames:
                 return False
+
+            location = sender.draggingLocation()
+
+            x, y = location.x, location.y
+
             lst = [str(resolve_path(name)) for name in filenames]
+
             i = BrowserView.get_instance("webkit", self)
+
+            ret = {"files": lst, "location": (x, y)}
+
             if not i.dropped_files:
                 return True
-            i.dropped_files(lst)
+            i.dropped_files(ret)
+
             return True
 
         def mouseDown_(self, event):
