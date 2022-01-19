@@ -68,7 +68,6 @@ except AttributeError:
 
 logger = logging.getLogger("pywebview")
 logger.debug("Using Cocoa")
-logger.debug("FOO123")
 
 renderer = "wkwebview"
 
