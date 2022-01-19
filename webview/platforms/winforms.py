@@ -63,19 +63,31 @@ def _is_edge():
 
 
 def _is_chromium():
-    def edge_build(key):
+    def edge_build(key_type, key, description=''):
         try:
             windows_key = None
-            if machine() == 'x86':
-                windows_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,  r'SOFTWARE\Microsoft\EdgeUpdate\Clients\\' + key)
+            if machine() == 'x86' or key_type == 'HKEY_CURRENT_USER':
+                path = rf'Microsoft\EdgeUpdate\Clients\{key}'
             else:
-                windows_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,  r'SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\\' + key)
+                path = rf'WOW6432Node\Microsoft\EdgeUpdate\Clients\{key}'
+
+            register_key = rf'Computer\{key_type}\{path}'
+            windows_key = winreg.OpenKey(getattr(winreg, key_type), rf'SOFTWARE\{path}')
             build, _ = winreg.QueryValueEx(windows_key, 'pv')
             build = int(build.replace('.', '')[:6])
 
             return build
         except Exception as e:
-            logger.debug(e)
+            # Forming extra information
+            extra_info = ''
+            if description != '':
+                extra_info = f'{description} Registry path: {register_key}'
+            else:
+                extra_info = f'Registry path: {register_key}'
+
+            # Adding extra info to error
+            e.strerror += ' - ' + extra_info
+            logger.debug(e)           
         finally:
             winreg.CloseKey(windows_key)
 
@@ -89,17 +101,18 @@ def _is_chromium():
             return False
 
         build_versions = [
-            '{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}', # runtime
-            '{2CD8A007-E189-409D-A2C8-9AF4EF3C72AA}', # beta
-            '{0D50BFEC-CD6A-4F9A-964C-C7416E3ACB10}', # dev
-            '{65C35B14-6C1D-4122-AC46-7148CC9D6497}' # canary
+            {'key':'{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}', 'description':'Microsoft Edge WebView2 Runtime'},  # runtime
+            {'key':'{2CD8A007-E189-409D-A2C8-9AF4EF3C72AA}', 'description':'Microsoft Edge WebView2 Beta'}, # beta
+            {'key':'{0D50BFEC-CD6A-4F9A-964C-C7416E3ACB10}', 'description':'Microsoft Edge WebView2 Developer'}, # dev
+            {'key':'{65C35B14-6C1D-4122-AC46-7148CC9D6497}', 'description':'Microsoft Edge WebView2 Canary'}, # canary
         ]
 
-        for key in build_versions:
-            build = edge_build(key)
+        for item in build_versions:
+            for key_type in ('HKEY_CURRENT_USER', 'HKEY_LOCAL_MACHINE'):
+                build = edge_build(key_type, item['key'], item['description'])
 
-            if build >= 860622: # Webview2 86.0.622.0
-                return True
+                if build >= 860622: # Webview2 86.0.622.0
+                    return True
 
     except Exception as e:
         logger.debug(e)
