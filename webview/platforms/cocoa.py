@@ -10,7 +10,7 @@ import os
 import time
 import webbrowser
 import ctypes
-from threading Semaphore
+from threading import Semaphore
 
 import Foundation
 import AppKit
@@ -1061,7 +1061,6 @@ def get_screens():
 
 def get_window(notification):
     return BrowserView.get_instance("window", notification.object()).pywebview_window
-
 
 
 def resolve_path(path):
