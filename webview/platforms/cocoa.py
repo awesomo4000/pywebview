@@ -7,9 +7,10 @@ http://github.com/r0x0r/pywebview/
 import json
 import logging
 import os
+import time
 import webbrowser
 import ctypes
-from threading import Event, Semaphore
+from threading Semaphore
 
 import Foundation
 import AppKit
@@ -26,6 +27,7 @@ from webview import (
     parse_file_type,
     windows,
 )
+from webview.js import drag
 from webview.util import parse_api_js, default_html, js_bridge_call
 from webview.js.css import disable_text_select
 from webview.screen import Screen
@@ -289,7 +291,7 @@ class BrowserView:
 
             i = BrowserView.get_instance("webkit", self)
 
-            ret = {"files": lst, "location": (x, y)}
+            ret = {"files": lst, "location": (x, y), "time": time.time()}
 
             if not i.dropped_files:
                 return True
@@ -452,9 +454,9 @@ class BrowserView:
 
         self.webkit = BrowserView.WebKitHost.alloc().initWithFrame_(rect).retain()
 
-        # Get full pathnames when drags to webview happen
+        # Setup file drags to get full paths of native OS
 
-        self.webkit.registerForDraggedTypes_([AppKit.NSFilenamesPboardType, None])
+        self.webkit.registerForDraggedTypes_([AppKit.NSFilenamesPboardType])
 
         user_agent = settings.get("user_agent") or _user_agent
 
@@ -1059,6 +1061,7 @@ def get_screens():
 
 def get_window(notification):
     return BrowserView.get_instance("window", notification.object()).pywebview_window
+
 
 
 def resolve_path(path):
