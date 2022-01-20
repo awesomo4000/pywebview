@@ -456,7 +456,7 @@ class BrowserView:
 
         # Setup file drags to get full paths of native OS
 
-        self.webkit.registerForDraggedTypes_([AppKit.NSFilenamesPboardType])
+        self.webkit.registerForDraggedTypes_([AppKit.NSFilenamesPboardType, None])
 
         user_agent = settings.get("user_agent") or _user_agent
 
