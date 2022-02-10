@@ -458,6 +458,10 @@ class BrowserView:
 
         self.webkit.registerForDraggedTypes_([AppKit.NSFilenamesPboardType, None])
 
+        # allow magnification
+        self.webkit.setAllowsMagnification_(True)
+        self.webkit.setAllowsBackForwardNavigationGestures_(True)
+
         user_agent = settings.get("user_agent") or _user_agent
 
         if user_agent:
