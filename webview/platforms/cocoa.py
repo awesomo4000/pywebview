@@ -357,6 +357,7 @@ class BrowserView:
 
             # Fix arrow keys not responding in text inputs
             keyCode_ = theEvent.keyCode()
+            logger.debug(f"performKeyEquivalent:{keyCode_}")
             UP, DOWN, LEFT, RIGHT, DELETE, PG_DWN, PG_UP = (
                 126,
                 125,
